@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <string.h>
 #include "array_list_p.h"
 
 // The initial capacity of the data array
@@ -24,10 +25,11 @@
 
 /*
 The list data type for the array_list module
+Data is a char because pointer arithmetic is used
 */
 typedef struct list
 {
-  int *data;
+  char *data;
   int size;
   int capacity;
   size_t element_size;
@@ -57,7 +59,7 @@ list_p list_create(size_t element_size)
   list->size = 0;
   list->capacity = INITIAL_CAPACITY;
   list->element_size = element_size;
-  list->data = calloc(list->capacity, list->element_size);
+  list->data = malloc(list->capacity * list->element_size);
   assert(list->data != NULL && "Error in memory allocation");
 
   return list;
@@ -68,19 +70,28 @@ Gets the list item at the specified index
 
 Inputs:
   list - pointer to an instance of the list type
+  index - the array index
+  out - a pointer which will point to the requested list element
+
+Outputs:
+  out - a pointer to the requested list element
 
 Returns:
-  The value of the item at the specified index
+  Nothing
 
 Throws:
   aborts if the specified index is outside the list bounds
   based on the current list size (list->size variable)
 
 */
-int list_get(list_p list, int index)
+void list_get(list_p list, int index, void *out)
 {
   assert(!(_is_index_outside_bounds(list->size, index)) && "Error: list index out of range");
-  return list->data[index];
+
+  // Return the element via the out variable
+  // Note the value is copied to avoid making reference to the address
+  // of the element (which could change in subsequent inserts/deletes etc)
+  memcpy(out, _data_ptr(list, index), list->element_size);
 }
 
 /*
@@ -88,6 +99,7 @@ Gets the list item at the specified index
 
 Inputs:
   list - pointer to an instance of the list type
+  value - pointer to the value to be added
 
 Outputs:
   list - updated list->data array
@@ -100,10 +112,14 @@ Throws:
   based on the current list size (list->size variable)
 
 */
-void list_set(list_p list, int value, int index)
+void list_set(list_p list, void *value, int index)
 {
   assert(!(_is_index_outside_bounds(list->size, index)) && "Error: list index out of range");
-  list->data[index] = value;
+  // list->data[index] = value;
+  // memset(list->data + index*list->element_size, value, list->element_size);
+  memcpy(_data_ptr(list, index),
+         value,
+         list->element_size);
 }
 
 /*
@@ -112,7 +128,7 @@ list_insert with an index equal to the size of the list
 
 Inputs:
   list - pointer to an instance of the list type
-  value - The value to be appended
+  value - Pointer to the value to be appended
 
 Returns:
   Nothing
@@ -121,7 +137,7 @@ Throws:
   list_insert aborts if there is insufficient capacity to append the item
 
 */
-void list_append(list_p list, int value)
+void list_append(list_p list, void *value)
 {
   list_insert(list, value, list->size);
 }
@@ -131,7 +147,7 @@ Inserts a new value at the specified index
 
 Inputs:
   list - pointer to an instance of the list type
-  value - The value to be inserted
+  value - Pointer to the value to be inserted
   index - the list index to insert the value
 
 Outputs:
@@ -145,7 +161,7 @@ Throws:
   index is out of the bounds of the expanded list
 
 */
-void list_insert(list_p list, int value, int index)
+void list_insert(list_p list, void *value, int index)
 {
   // Check that there's capacity to insert another item
   if (_is_list_full(list))
@@ -167,9 +183,15 @@ void list_insert(list_p list, int value, int index)
   // by looping backwards from the end
   for (int i = list->size; i > index; i--)
   {
-    list->data[i] = list->data[i - 1];
+    // list->data[i] = list->data[i - 1];
+    // memcpy(list->data + i*list->element_size, list->data + (i-1)*list->element_size, list->element_size);
+    memcpy(_data_ptr(list, i),
+           _data_ptr(list, i - 1),
+           list->element_size);
   }
-  list->data[index] = value;
+  // list->data[index] = value;
+  // memset(list->data + index*list->element_size, value, list->element_size);
+  memcpy(_data_ptr(list, index), value, list->element_size);
   list->size++;
 }
 
@@ -184,13 +206,13 @@ Outputs:
   list - updated list->data array, updated list->size
 
 Returns:
-  The value of the item that was removed
+  Nothing
 
 Throws:
   aborts if the specified index is out of the current bounds of the list
 
 */
-int list_remove(list_p list, int index)
+void list_remove(list_p list, int index)
 {
   if (_is_list_too_empty(list))
   {
@@ -201,19 +223,19 @@ int list_remove(list_p list, int index)
   sprintf(error, "Error: Cannot remove element at index %d.\n", index);
   assert(!(_is_index_outside_bounds(list->size, index)) && error);
 
-  // Save the item for returning
-  int removed = list->data[index];
-
   // Shift elements to the left
   for (int i = index; i < list->size - 1; i++)
-    list->data[i] = list->data[i + 1];
+  {
+    // list->data[i] = list->data[i + 1];
+    memcpy(_data_ptr(list, i), _data_ptr(list, i + 1), list->element_size);
+  }
 
   // Set the last item to zero
   // This is now outside the list bounds
   // following the removal
-  list->data[list->size] = 0;
+  // list->data[list->size] = 0;
+  memset(_data_ptr(list, list->size), 0, list->element_size);
   list->size--;
-  return removed;
 }
 
 /*
@@ -369,14 +391,27 @@ void _resize(list_p list, int capacity)
 {
 
   list->data = realloc(list->data, capacity * list->element_size);
-  if (list->data == NULL)
-  {
-    fprintf(stderr, "Error: Cannot resize list (Memory allocation failed).\n");
-    abort();
-  }
+  assert(list->data != NULL && "Error: Cannot resize list (Memory allocation failed).\n");
+
   list->capacity = capacity;
 
 #if DEBUG
   printf("Resize: Current capacity %d\n", capacity);
 #endif
+}
+
+/*
+Internal function to perform pointer arithmetic
+
+Inputs:
+  list - pointer to an instance of the list type
+  index - The index of the array
+
+Returns:
+  Pointer to the array element at index
+
+*/
+void *_data_ptr(list_p list, int index)
+{
+  return list->data + index * list->element_size;
 }

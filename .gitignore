@@ -52,6 +52,7 @@ Mkfile.old
 dkms.conf
 
 datastructs
+main
 *.code-workspace
 .vscode/
 /objs/

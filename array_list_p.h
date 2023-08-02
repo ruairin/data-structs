@@ -20,5 +20,6 @@ bool _is_list_too_empty(list_p list);
 void _grow_array(list_p list);
 void _shrink_array(list_p list);
 void _resize(list_p list, int capacity);
+void* _data_ptr(list_p list, int index);
 
 #endif

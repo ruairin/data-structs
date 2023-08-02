@@ -12,16 +12,28 @@ void print_list(list_p list, int start, int end);
 void strcat_dynamic(char *dest, char *src, int *dest_len);
 void grow_str(char *str, int *current_length, int required_length);
 
+#define TYPE int
+#define PRINT_TYPE "%d"
+
 int main(void)
 {
+  TYPE value = 0;
+
   list_p my_list;
-  my_list = list_create(sizeof(int));
+  my_list = list_create(sizeof(TYPE));
   printf("List created\n\n");
 
   printf("--- Append ---\n");
-  list_append(my_list, 10);
-  list_append(my_list, 20);
-  list_append(my_list, 30);
+  value = 10;
+  list_append(my_list, &value);
+  value = 20;
+  list_append(my_list, &value);
+  value = 30;
+  list_append(my_list, &value);
+
+  list_get(my_list, 0, &value);
+  printf(PRINT_TYPE "\n", value);
+
   printf("List Contents:");
   print_list(my_list, 0, list_size(my_list) - 1);
   printf("List Size: %d\n", list_size(my_list));
@@ -41,32 +53,37 @@ int main(void)
 
   printf("\n--- Insert ---\n");
   printf("Insert Item 100 at Index 1\n");
-  list_insert(my_list, 100, 1);
+  value = 100;
+  list_insert(my_list, &value, 1);
   printf("List Contents:");
   print_list(my_list, 0, list_size(my_list) - 1);
   printf("List Size: %d\n", list_size(my_list));
 
   printf("Insert Item 500 at Index 0\n");
-  list_insert(my_list, 500, 0);
+  value = 500;
+  list_insert(my_list, &value, 0);
   printf("List Contents:");
   print_list(my_list, 0, list_size(my_list) - 1);
   printf("List Size: %d\n", list_size(my_list));
 
   printf("Insert Item 500 at End of List\n");
-  list_insert(my_list, 500, list_size(my_list));
+  value = 500;
+  list_insert(my_list, &value, list_size(my_list));
   printf("List Contents:");
   print_list(my_list, 0, list_size(my_list) - 1);
   printf("List Size: %d\n", list_size(my_list));
 
   printf("\n--- Set ---\n");
   printf("Set Item at Index 0 to -1000\n");
-  list_set(my_list, -1000, 0);
+  value = -1000;
+  list_set(my_list, &value, 0);
   printf("List Contents:");
   print_list(my_list, 0, list_size(my_list) - 1);
   printf("List Size: %d\n", list_size(my_list));
 
-  printf("Set Item at Index 0 to -1000\n");
-  list_set(my_list, -1000, list_size(my_list) - 1);
+  printf("Set Item at Index 3 to -1000\n");
+  value = -1000;
+  list_set(my_list, &value, list_size(my_list) - 1);
   printf("List Contents:");
   print_list(my_list, 0, list_size(my_list) - 1);
   printf("List Size: %d\n", list_size(my_list));
@@ -74,7 +91,8 @@ int main(void)
   printf("\n--- Append ~1000 items ---\n");
   for (int i = 0; i < 1000; i++)
   {
-    list_append(my_list, i);
+    TYPE val = i;
+    list_append(my_list, &val);
   }
   printf("End of List:\n");
   print_list(my_list, list_size(my_list) - 20, list_size(my_list) - 1);
@@ -117,9 +135,10 @@ void print_list(list_p list, int start, int end)
   char *buf = malloc(buf_size * sizeof(char));
   strcpy(buf, "");
 
+  // temporary string for appending to buf
   char tmp[64] = "";
 
-  // If the start of the array is being printed, 
+  // If the start of the array is being printed,
   // show the left bracket otherwise show dots
   if (start == 0)
     strcpy(tmp, "[");
@@ -130,12 +149,13 @@ void print_list(list_p list, int start, int end)
 
   for (int i = start; i <= end; i++)
   {
-    snprintf(tmp, sizeof(tmp), "%d, ", list_get(list, i));
+    TYPE value;
+    list_get(list, i, &value);
+    snprintf(tmp, sizeof(tmp), PRINT_TYPE ", ", value);
     strcat_dynamic(buf, tmp, &buf_size);
   }
 
-
-  // If the end of the array is being printed, 
+  // If the end of the array is being printed,
   // remove the trailing comma and show the right bracket
   // otherwise show dots
   if (end == list_size(list) - 1)
@@ -171,7 +191,7 @@ void strcat_dynamic(char *dest, char *src, int *dest_len)
 {
   // total length after concatenate. Add 1 for trailing \0
   int total_len = strlen(dest) + strlen(src) + 1;
-  
+
   // Expand the string if it's not long enough
   grow_str(dest, dest_len, total_len);
 

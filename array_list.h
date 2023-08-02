@@ -39,18 +39,18 @@ list_p list_create(size_t element_size);
  * @param[out] list Updated list
  * @return nothing
 */
-void list_append(list_p list, int value);
+void list_append(list_p list, void* value);
 
 /**
  * @brief insert an item in the list at the specified index
  * 
  * @param[in] list A pointer to an instance of the list_p data type
- * @param[in] value The value to be appended
+ * @param[in] value Pointer to the value to be appended
  * @param[in] index The list index where the item should be inserted
  * @param[out] list Updated list
  * @return nothing
 */
-void list_insert(list_p list, int value, int index);
+void list_insert(list_p list, void* value, int index);
 
 /**
  * @brief Get the current size (number of elements in use) of the list 
@@ -63,19 +63,20 @@ int list_size(list_p list);
  * @brief get the value of the item at the specified index
  * @param[in] list A pointer to an instance of the list_p data type
  * @param[in] index The list index of the item to get
+ * @param[inout] out Address of a variable to store the result
  * @return The value at the specified index
 */
-int list_get(list_p list, int index);
+void list_get(list_p list, int index, void *out);
 
 /**
  * @brief Set the value of the item at the specified index
  * @param[in] list A pointer to an instance of the list_p data type
- * @param[in] value The value to set at index 
+ * @param[in] value pointer to the value to set at index 
  * @param[in] index The list index of the item to set
  * @param[out] list Updated data array in list->data
  * @return nothing
 */
-void list_set(list_p list, int value, int index);
+void list_set(list_p list, void* value, int index);
 
 /**
  * @brief Remove the item at the specified list index
@@ -84,7 +85,7 @@ void list_set(list_p list, int value, int index);
  * @param[out] list Updated data array in list->data, updated list->size
  * @return The value of the item that was removed
 */
-int list_remove(list_p list, int index);
+void list_remove(list_p list, int index);
 
 /**
  * @brief Delete the list and free any memory allocated 
