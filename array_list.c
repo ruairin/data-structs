@@ -116,7 +116,6 @@ void list_set(list_p list, void *value, int index)
 {
   assert(!(_is_index_outside_bounds(list->size, index)) && "Error: list index out of range");
   // list->data[index] = value;
-  // memset(list->data + index*list->element_size, value, list->element_size);
   memcpy(_data_ptr(list, index),
          value,
          list->element_size);
@@ -184,13 +183,11 @@ void list_insert(list_p list, void *value, int index)
   for (int i = list->size; i > index; i--)
   {
     // list->data[i] = list->data[i - 1];
-    // memcpy(list->data + i*list->element_size, list->data + (i-1)*list->element_size, list->element_size);
     memcpy(_data_ptr(list, i),
            _data_ptr(list, i - 1),
            list->element_size);
   }
   // list->data[index] = value;
-  // memset(list->data + index*list->element_size, value, list->element_size);
   memcpy(_data_ptr(list, index), value, list->element_size);
   list->size++;
 }
