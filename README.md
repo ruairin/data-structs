@@ -3,6 +3,7 @@
 
 This is a small project to develop some basic data structures in C. Currently, the following data structures are implemented:
 - Array list (array_list.*)
+- Single-ended queue (queue.*)
 
 # Organisation
 
