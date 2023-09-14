@@ -17,6 +17,10 @@ void grow_str(char *str, int *current_length, int required_length);
 
 int test_array_list(void)
 {
+  printf("\n===========================");
+  printf("\n======== List Test ========");
+  printf("\n===========================\n\n");
+
   TYPE value = 0;
 
   list_p my_list;

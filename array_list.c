@@ -1,5 +1,5 @@
 /**
- * array_list.h
+ * array_list.c
  *
  * Implementation of functions for the array_list module
  *
