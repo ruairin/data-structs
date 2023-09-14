@@ -9,10 +9,10 @@ NAME = datastructs
 
 #####################################################################################
 GCC = gcc
-SOURCES = main.c array_list.c
+SOURCES = main.c array_list.c test_array_list.c
 				  
 # Dependencies (recompile if they change)
-DEPS = array_list.h array_list_p.h
+DEPS = array_list.h array_list_p.h test_array_list.h
 
 # Normal object-files, and their directory
 ODIR = objs
